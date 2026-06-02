@@ -1,15 +1,15 @@
-# memodist
+# MINDS
 
-Office memorandum distribution system built with Django.
+MINDS (Memorandum Information Notification Distribution System) is an office memorandum distribution system built with Django.
 
 ## Setup
 
 ```bash
 # Clone this repository locally
-git clone https://github.com/TheoDrHashiriya/memodist.git
+git clone https://github.com/TheoDrHashiriya/MINDS.git
 
 # Navigate to the local repo
-cd memodist
+cd MINDS
 
 # Rename the `.env.sample` to `.env` and fill in each field as needed
 mv .env.sample .env
