@@ -6,7 +6,7 @@ MINDS (Memorandum Information Notification Distribution System) is an office mem
 
 ```bash
 # Clone this repository locally
-git clone https://github.com/TheoDrHashiriya/MINDS.git
+git clone https://github.com/theologicos/MINDS.git
 
 # Navigate to the local repo
 cd MINDS
