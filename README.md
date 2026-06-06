@@ -11,8 +11,8 @@ git clone https://github.com/theologicos/MINDS.git
 # Navigate to the local repo
 cd MINDS
 
-# Copy the `.env.sample` to `.env` and fill in each field as needed
-cp .env.sample .env
+# Copy the `.env.example` to `.env` and fill in each field as needed
+cp .env.example .env
 nano .env
 
 # Create a virtual environment
