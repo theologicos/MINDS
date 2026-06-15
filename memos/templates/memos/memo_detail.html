@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ memo.title }}{% endblock %}
+{% block breadcrumb %}{% include "partials/breadcrumb.html" %}{% endblock %}
+{% block content %}
+<div class="memo-detail-header">
+    <div>
+        <div class="flex items-center gap-3 mb-2">
+            <span class="badge badge-{{ memo.status }}">{{ memo.get_status_display }}</span>
+            <span class="badge badge-priority-{{ memo.priority }}">{{ memo.get_priority_display }}</span>
+        </div>
+        <h1>{{ memo.title }}</h1>
+    </div>
+    <div class="page-header-actions">
+        {% if can_edit %}
+        <a href="{% url 'memos:edit' memo.pk %}" class="btn btn-secondary">
+            <i class="fa-solid fa-pen"></i> Edit
+        </a>
+        {% endif %}
+        {% if can_archive %}
+        <button class="btn btn-danger" data-modal-target="archiveModal">
+            <i class="fa-solid fa-box-archive"></i> Archive
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="memo-meta">
+        <div class="memo-meta-item">
+            <i class="fa-solid fa-user"></i>
+            <span>{{ memo.created_by.get_full_name|default:memo.created_by.username }}</span>
+        </div>
+        {% if memo.department %}
+        <div class="memo-meta-item">
+            <i class="fa-solid fa-building"></i>
+            <span>{{ memo.department.name }}</span>
+        </div>
+        {% endif %}
+        <div class="memo-meta-item">
+            <i class="fa-solid fa-calendar"></i>
+            <span>
+                {% if memo.status == "draft" %}Last updated {{ memo.updated_at|date:"M d, Y \a\t H:i" }}
+                {% else %}Sent {{ memo.sent_at|date:"M d, Y \a\t H:i" }}{% endif %}
+            </span>
+        </div>
+    </div>
+    <div class="memo-body">{{ memo.body }}</div>
+    {% if memo.attachment %}
+    <div class="memo-attachment">
+        <div class="memo-attachment-icon"><i class="fa-solid fa-paperclip"></i></div>
+        <div class="flex-col flex-1">
+            <span class="font-medium text-sm">{{ memo.attachment_filename }}</span>
+            <span class="text-xs text-muted">Attachment</span>
+        </div>
+        <a href="{{ memo.attachment.url }}" target="_blank" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-download"></i> Download
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if user.can_create_memos and recipients_list %}
+<div class="card mt-6">
+    <div class="card-header">
+        <h3><i class="fa-solid fa-users"></i> Recipients ({{ memo.read_count }}/{{ memo.total_recipients }} read)</h3>
+        <div class="progress-bar" style="width:140px;">
+            <div class="progress-bar-fill" style="width:{{ memo.read_rate }}%;"></div>
+        </div>
+    </div>
+    <div class="table-wrapper" style="border:none;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Recipient</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Read At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in recipients_list %}
+                <tr>
+                    <td data-label="Recipient">
+                        <div class="cell-title">
+                            <div class="user-avatar" style="width:28px;height:28px;font-size:var(--font-size-xs);">
+                                {{ rec.recipient.first_name|first|default:rec.recipient.username|first|upper }}
+                            </div>
+                            {{ rec.recipient.get_full_name|default:rec.recipient.username }}
+                        </div>
+                    </td>
+                    <td data-label="Department">{{ rec.recipient.department.name|default:"—" }}</td>
+                    <td data-label="Status">
+                        {% if rec.is_read %}
+                            <span class="badge badge-sent"><i class="fa-solid fa-check"></i> Read</span>
+                        {% else %}
+                            <span class="badge badge-draft">Unread</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Read At">{{ rec.read_at|date:"M d, Y H:i"|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if can_archive %}
+<div class="modal-overlay" id="archiveModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Archive Memorandum</h3>
+            <button class="modal-close" data-modal-close="archiveModal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to archive this memorandum? It will move to the Archived list.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-modal-close="archiveModal">Cancel</button>
+            <form action="{% url 'memos:archive' memo.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Archive</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

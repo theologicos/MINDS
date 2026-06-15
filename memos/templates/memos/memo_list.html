@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block breadcrumb %}{% include "partials/breadcrumb.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ page_title }}</h1>
+        <p>{{ page_subtitle }}</p>
+    </div>
+    <div class="page-header-actions">
+        {% include "partials/search_bar.html" with placeholder="Search by title..." %}
+        {% if user.can_create_memos and list_type != "assigned" %}
+            <a href="{% url 'memos:create' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Create Memo
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    {% if memos %}
+    <div class="table-wrapper" style="border:none;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>{% if list_type == "assigned" %}From{% else %}Created By{% endif %}</th>
+                    <th>Department</th>
+                    <th>Priority</th>
+                    {% if list_type == "sent" %}<th>Read Rate</th>{% endif %}
+                    <th>Date</th>
+                    {% if list_type == "archived" %}<th>Status</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for memo in memos %}
+                <tr class="{% if memo.is_unread_for_user %}row-unread{% endif %}">
+                    <td data-label="Title">
+                        <a href="{% url 'memos:detail' memo.id %}" class="cell-title">
+                            {% if memo.is_unread_for_user %}<span class="unread-dot"></span>{% endif %}
+                            <span class="truncate" style="max-width:240px;">{{ memo.title }}</span>
+                            {% if memo.attachment %}<i class="fa-solid fa-paperclip text-light text-xs"></i>{% endif %}
+                        </a>
+                    </td>
+                    <td data-label="From / Created By">{{ memo.created_by.get_full_name|default:memo.created_by.username }}</td>
+                    <td data-label="Department">{{ memo.department.name|default:"—" }}</td>
+                    <td data-label="Priority">
+                        <span class="badge badge-priority-{{ memo.priority }}">{{ memo.get_priority_display }}</span>
+                    </td>
+                    {% if list_type == "sent" %}
+                    <td data-label="Read Rate">
+                        <div class="flex items-center gap-2">
+                            <div class="progress-bar" style="width:80px;">
+                                <div class="progress-bar-fill" style="width:{{ memo.read_rate }}%;"></div>
+                            </div>
+                            <span class="text-xs text-muted">{{ memo.read_rate }}%</span>
+                        </div>
+                    </td>
+                    {% endif %}
+                    <td data-label="Date">
+                        {% if list_type == "drafts" %}{{ memo.updated_at|date:"M d, Y" }}
+                        {% elif list_type == "sent" or list_type == "assigned" %}{{ memo.sent_at|date:"M d, Y" }}
+                        {% else %}{{ memo.created_at|date:"M d, Y" }}{% endif %}
+                    </td>
+                    {% if list_type == "archived" %}
+                    <td data-label="Status"><span class="badge badge-archived">{{ memo.get_status_display }}</span></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include "partials/pagination.html" with page_obj=page_obj %}
+    {% else %}
+        {% if list_type == "drafts" or list_type == "sent" %}
+            {% include "partials/empty_state.html" with icon=empty_icon title=empty_title message=empty_message action_url=memo_create_url action_label="Create Memo" %}
+        {% else %}
+            {% include "partials/empty_state.html" with icon=empty_icon title=empty_title message=empty_message %}
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

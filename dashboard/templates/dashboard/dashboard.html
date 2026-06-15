@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Welcome back, {{ user.first_name|default:user.username }}</h1>
+        <p>Here's what's happening with your memorandums today.</p>
+    </div>
+    {% if user.can_create_memos %}
+    <div class="page-header-actions">
+        <a href="{% url 'memos:create' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Create Memo
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="stats-grid">
+    {% for stat in stats %}
+        {% include "partials/stats_card.html" with label=stat.label value=stat.value icon=stat.icon color=stat.color %}
+    {% endfor %}
+    {% if user.is_superadmin %}
+        {% include "partials/stats_card.html" with label="Departments" value=department_count icon="building" color="primary" %}
+        {% include "partials/stats_card.html" with label="Archived" value=archived_count icon="box-archive" color="info" %}
+    {% endif %}
+</div>
+
+<div class="grid grid-2" style="align-items:start;">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-envelope"></i> Recent Memorandums</h3>
+            {% if user.can_create_memos %}
+                <a href="{% url 'memos:sent' %}" class="dropdown-link">View all</a>
+            {% else %}
+                <a href="{% url 'memos:assigned' %}" class="dropdown-link">View all</a>
+            {% endif %}
+        </div>
+        {% if recent_memos %}
+        <div class="table-wrapper" style="border:none;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for memo in recent_memos %}
+                    <tr class="{% if memo.is_unread_for_user %}row-unread{% endif %}">
+                        <td data-label="Title">
+                            <a href="{% url 'memos:detail' memo.id %}" class="cell-title">
+                                {% if memo.is_unread_for_user %}<span class="unread-dot"></span>{% endif %}
+                                <span class="truncate" style="max-width:220px;">{{ memo.title }}</span>
+                            </a>
+                        </td>
+                        <td data-label="Status"><span class="badge badge-{{ memo.status }}">{{ memo.get_status_display }}</span></td>
+                        <td data-label="Priority"><span class="badge badge-priority-{{ memo.priority }}">{{ memo.get_priority_display }}</span></td>
+                        <td data-label="Date">{{ memo.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "partials/empty_state.html" with icon="envelope-open" title="No memorandums yet" message="Memorandums will appear here once created." %}
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-bell"></i> Recent Activity</h3>
+            <a href="{% url 'notifications:list' %}" class="dropdown-link">View all</a>
+        </div>
+        {% if recent_activity %}
+            {% for notif in recent_activity %}
+            <div class="dropdown-item" style="padding:var(--space-3) 0;border-bottom:1px solid var(--color-border);">
+                <div class="dropdown-item-icon"><i class="fa-solid fa-envelope"></i></div>
+                <div class="dropdown-item-content">
+                    <p style="font-weight:var(--font-weight-medium);white-space:normal;">{{ notif.message }}</p>
+                    <span>{{ notif.created_at|timesince }} ago</span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            {% include "partials/empty_state.html" with icon="bell-slash" title="No recent activity" message="Notifications will appear here." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

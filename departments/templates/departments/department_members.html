@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Manage Members — {{ department.name }}{% endblock %}
+{% block breadcrumb %}{% include "partials/breadcrumb.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h1>Manage Members</h1><p>Assign or remove users from <strong>{{ department.name }}</strong>.</p></div>
+</div>
+<div class="grid grid-2" style="align-items:start;">
+    <div class="card">
+        <div class="card-header"><h3><i class="fa-solid fa-user-plus"></i> Assign Members</h3></div>
+        {% include "partials/form_errors.html" with form=form %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Select Users</label>
+                {{ form.users }}
+                <p class="form-hint">{{ form.users.help_text }}</p>
+            </div>
+            <div class="alert alert-warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Saving will <strong>replace</strong> all current department assignments.</span>
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'departments:detail' department.pk %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Members</button>
+            </div>
+        </form>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3><i class="fa-solid fa-users"></i> Current Members ({{ current_members.count }})</h3></div>
+        {% if current_members %}
+        <div class="table-wrapper" style="border:none;">
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Role</th></tr></thead>
+                <tbody>
+                    {% for member in current_members %}
+                    <tr>
+                        <td data-label="Name">
+                            <div class="cell-title">
+                                <div class="user-avatar" style="width:28px;height:28px;font-size:var(--font-size-xs);">{{ member.first_name|first|default:member.username|first|upper }}</div>
+                                <div><div class="font-medium text-sm">{{ member.get_full_name|default:member.username }}</div><div class="text-xs text-muted">{{ member.email }}</div></div>
+                            </div>
+                        </td>
+                        <td data-label="Role">
+                            <span class="badge {% if member.role == 'superadmin' %}badge-priority-urgent{% elif member.role == 'admin' %}badge-priority-important{% else %}badge-draft{% endif %}">{{ member.get_role_display }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "partials/empty_state.html" with icon="user-slash" title="No members assigned" message="Use the form to assign users to this department." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
