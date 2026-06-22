@@ -34,11 +34,12 @@ class DepartmentForm(forms.ModelForm):
 
 class DepartmentMemberForm(forms.Form):
     users = forms.ModelMultipleChoiceField(
-        queryset=User.objects.filter(is_active=True).order_by("first_name", "last_name"),
+        queryset=User.objects.filter(is_active=True).select_related(
+            "department"
+        ).order_by("department__name", "first_name", "last_name"),
         required=False,
-        widget=forms.SelectMultiple(attrs={"class": "form-control", "size": "10"}),
+        widget=forms.CheckboxSelectMultiple(),
         label="Department Members",
-        help_text="Hold Ctrl/Cmd to select multiple users.",
     )
 
     def __init__(self, *args, department=None, **kwargs):
@@ -46,3 +47,12 @@ class DepartmentMemberForm(forms.Form):
         self.department = department
         if department:
             self.fields["users"].initial = department.members.values_list("pk", flat=True)
+
+    def get_users_with_conflict(self):
+        """Return users who already belong to a different department."""
+        selected = self.cleaned_data.get("users") or []
+        conflicts = []
+        for user in selected:
+            if user.department and user.department != self.department:
+                conflicts.append(user)
+        return conflicts
