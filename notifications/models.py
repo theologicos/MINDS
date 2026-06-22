@@ -7,7 +7,11 @@ class NotificationQuerySet(models.QuerySet):
         return self.filter(is_read=False)
 
     def for_user(self, user):
-        return self.filter(user=user)
+        from memos.models import Memorandum
+        return self.filter(
+        user=user,
+        memo__in=Memorandum.objects.visible_to(user)
+    )
 
 
 class Notification(models.Model):

@@ -26,7 +26,7 @@
     <a href="?filter=read" class="btn btn-sm {% if active_filter == 'read' %}btn-primary{% else %}btn-secondary{% endif %}">Read</a>
 </div>
 
-<div class="card" style="padding:0;overflow:hidden;">
+<div class="card" style="padding:0;overflow:hidden;" data-auto-refresh="4000">
     {% if notifications %}
         {% for notif in notifications %}
         <div class="notification-item {% if not notif.is_read %}notification-unread{% endif %}" id="notif-{{ notif.pk }}">
