@@ -1,4 +1,13 @@
-<form method="get" class="search-bar hide-mobile" role="search">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="search" name="q" value="{{ request.GET.q }}" placeholder="{{ placeholder|default:'Search...' }}" autocomplete="off">
+<form method="get" action="{% url 'core:search' %}" class="search-bar hide-mobile" role="search" id="globalSearchForm">
+    <i class="fa-solid fa-magnifying-glass" id="searchIcon"></i>
+    <i class="fa-solid fa-spinner fa-spin hidden" id="searchSpinner"></i>
+    <input
+        type="search"
+        name="q"
+        value="{{ request.GET.q }}"
+        placeholder="{{ placeholder|default:'Search memos...' }}"
+        autocomplete="off"
+        id="globalSearchInput"
+        aria-label="Search memos"
+    >
 </form>

@@ -80,3 +80,13 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .w-full{width:100%}.hidden{display:none!important}
 @media(max-width:640px){.hide-mobile{display:none!important}}
 @media(min-width:641px){.show-mobile{display:none!important}}
+
+/* Sidebar backdrop — mobile overlay */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.5);
+    z-index: 99;
+}
+.sidebar-open .sidebar-backdrop { display: block; }

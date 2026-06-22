@@ -11,14 +11,23 @@
         <a href="{% url 'dashboard:index' %}" class="sidebar-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
             <i class="fa-solid fa-gauge"></i><span>Dashboard</span>
         </a>
+
         <div class="sidebar-section-label">Memorandums</div>
-        {% if user.can_create_memos %}
+
         <a href="{% url 'memos:create' %}" class="sidebar-link {% if request.resolver_match.url_name == 'create' %}active{% endif %}">
             <i class="fa-solid fa-plus"></i><span>Create Memo</span>
         </a>
-        <a href="{% url 'memos:drafts' %}" class="sidebar-link {% if request.resolver_match.url_name == 'drafts' %}active{% endif %}">
-            <i class="fa-solid fa-file-pen"></i><span>Drafts</span>
-            {% if draft_count %}<span class="sidebar-link-badge">{{ draft_count }}</span>{% endif %}
+
+        <a href="{% url 'memos:my_memos' %}" class="sidebar-link {% if request.resolver_match.url_name == 'my_memos' %}active{% endif %}">
+            <i class="fa-solid fa-file-lines"></i><span>My Memos</span>
+            {% if my_pending_count %}<span class="sidebar-link-badge" style="background:var(--color-warning);">{{ my_pending_count }}</span>
+            {% elif my_rejected_count %}<span class="sidebar-link-badge" style="background:var(--color-danger);">{{ my_rejected_count }}</span>{% endif %}
+        </a>
+
+        {% if user.can_send_directly %}
+        <a href="{% url 'memos:pending' %}" class="sidebar-link {% if request.resolver_match.url_name == 'pending' %}active{% endif %}">
+            <i class="fa-solid fa-clock"></i><span>Pending Approval</span>
+            {% if pending_count %}<span class="sidebar-link-badge" style="background:var(--color-warning);">{{ pending_count }}</span>{% endif %}
         </a>
         <a href="{% url 'memos:sent' %}" class="sidebar-link {% if request.resolver_match.url_name == 'sent' %}active{% endif %}">
             <i class="fa-solid fa-paper-plane"></i><span>Sent</span>
@@ -29,19 +38,23 @@
             {% if unread_count %}<span class="sidebar-link-badge">{{ unread_count }}</span>{% endif %}
         </a>
         {% endif %}
+
         <a href="{% url 'memos:archived' %}" class="sidebar-link {% if request.resolver_match.url_name == 'archived' %}active{% endif %}">
             <i class="fa-solid fa-box-archive"></i><span>Archived</span>
         </a>
+
         <a href="{% url 'notifications:list' %}" class="sidebar-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}">
             <i class="fa-solid fa-bell"></i><span>Notifications</span>
             {% if unread_notif_count %}<span class="sidebar-link-badge">{{ unread_notif_count }}</span>{% endif %}
         </a>
+
         {% if user.is_superadmin or user.is_admin %}
         <div class="sidebar-section-label">Management</div>
         <a href="{% url 'reports:index' %}" class="sidebar-link {% if request.resolver_match.app_name == 'reports' %}active{% endif %}">
             <i class="fa-solid fa-chart-line"></i><span>Reports</span>
         </a>
         {% endif %}
+
         {% if user.can_manage_departments %}
         <a href="{% url 'departments:list' %}" class="sidebar-link {% if request.resolver_match.app_name == 'departments' %}active{% endif %}">
             <i class="fa-solid fa-building"></i><span>Departments</span>

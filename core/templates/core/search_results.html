@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{% if q %}Search: "{{ q }}"{% else %}Search{% endif %}{% endblock %}
+{% block breadcrumb %}{% include "partials/breadcrumb.html" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>
+            {% if q %}
+                Search Results
+            {% else %}
+                Search
+            {% endif %}
+        </h1>
+        <p>
+            {% if q and results %}
+                Found <strong>{{ result_count }}</strong> memo{{ result_count|pluralize }} matching <strong>"{{ q }}"</strong>
+            {% elif q %}
+                No results for <strong>"{{ q }}"</strong> — try different keywords.
+            {% else %}
+                Enter at least 2 characters to search.
+            {% endif %}
+        </p>
+    </div>
+    <div class="page-header-actions">
+        {# Inline search so users can refine without going back to topbar #}
+        <form method="get" action="{% url 'core:search' %}" class="search-bar" role="search" style="max-width:none;width:320px;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="search" name="q" value="{{ q }}" placeholder="Refine search..." autocomplete="off" autofocus>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    {% if results %}
+    <div class="table-wrapper" style="border:none;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Created By</th>
+                    <th>Departments</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for memo in results %}
+                <tr>
+                    <td data-label="Title">
+                        <a href="{% url 'memos:detail' memo.id %}" class="cell-title">
+                            <span class="truncate" style="max-width:240px;">{{ memo.title }}</span>
+                            {% if memo.attachment %}
+                                <i class="fa-solid fa-paperclip text-light" style="font-size:0.6rem;"></i>
+                            {% endif %}
+                        </a>
+                    </td>
+                    <td data-label="Created By">
+                        <div class="font-medium">
+                            {{ memo.created_by.get_full_name|default:memo.created_by.username }}
+                        </div>
+                        {% if memo.created_by.department %}
+                            <div class="text-xs text-muted">{{ memo.created_by.department.name }}</div>
+                        {% endif %}
+                    </td>
+                    <td data-label="Departments">
+                        {% with depts=memo.departments.all %}
+                            {% if depts %}
+                                {% for d in depts|slice:":2" %}
+                                    <span class="badge badge-draft" style="margin-right:2px;">{{ d.code }}</span>
+                                {% endfor %}
+                                {% if depts.count > 2 %}
+                                    <span class="text-xs text-muted">+{{ depts.count|add:"-2" }}</span>
+                                {% endif %}
+                            {% else %}—{% endif %}
+                        {% endwith %}
+                    </td>
+                    <td data-label="Priority">
+                        <span class="badge badge-priority-{{ memo.priority }}">
+                            {{ memo.get_priority_display }}
+                        </span>
+                    </td>
+                    <td data-label="Status">
+                        {% include "partials/approval_status_badge.html" with memo=memo %}
+                    </td>
+                    <td data-label="Date">{{ memo.updated_at|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif q %}
+        {% include "partials/empty_state.html" with icon="magnifying-glass" title="No results found" message="Try broader keywords, or check your spelling." %}
+    {% else %}
+        {% include "partials/empty_state.html" with icon="magnifying-glass" title="Search memorandums" message="Search across memo titles and content. Results are limited to memos you have access to." %}
+    {% endif %}
+</div>
+{% endblock %}
